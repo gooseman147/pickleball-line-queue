@@ -106,3 +106,38 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 });
+document
+  .getElementById("checkin-form")
+  .addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const partySize = parseInt(document.getElementById("partySize").value);
+    const skill = parseFloat(document.getElementById("skill").value);
+    const matchPref = document.querySelector(
+      'input[name="matchPref"]:checked'
+    ).value;
+
+    if (!name || isNaN(partySize) || isNaN(skill)) {
+      document.getElementById("confirmation").innerText =
+        "Please fill out all fields correctly.";
+      return;
+    }
+
+    const data = { name, partySize, skill, matchPref };
+
+    try {
+      await addDoc(collection(db, "queue"), data);
+      hideModal(); // Hide the modal after successful submission
+      displayQueue(); // Refresh the queue display
+    } catch (err) {
+      console.error("Error joining queue:", err);
+      document.getElementById("confirmation").innerText =
+        "Something went wrong. Please try again.";
+    }
+  });
+function hideModal() {
+  document.getElementById("queue-modal").style.display = "none";
+  document.getElementById("checkin-form").reset();
+  document.getElementById("confirmation").innerText = "";
+}
