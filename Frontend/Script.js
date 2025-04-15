@@ -61,3 +61,43 @@ document.getElementById("game-done-btn").addEventListener("click", async () => {
     console.error(err);
   }
 });
+function showSection(sectionId) {
+  const sections = document.querySelectorAll(".page-section");
+  sections.forEach((section) => {
+    section.style.display = section.id === sectionId ? "block" : "none";
+  });
+}
+
+// Function to fetch and display the queue
+async function displayQueue() {
+  const queueList = document.getElementById("queue-list");
+  queueList.innerHTML = ""; // Clear existing content
+
+  const querySnapshot = await getDocs(collection(db, "queue"));
+  querySnapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const card = document.createElement("div");
+    card.className = "queue-card";
+    card.innerHTML = `
+      <span class="remove-button" data-id="${docSnap.id}">X</span>
+      <p><strong>Name:</strong> ${data.name}</p>
+      <p><strong>Skill Level:</strong> ${data.skill}</p>
+    `;
+    queueList.appendChild(card);
+  });
+
+  // Add event listeners to remove buttons
+  document.querySelectorAll(".remove-button").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const docId = button.getAttribute("data-id");
+      await deleteDoc(doc(db, "queue", docId));
+      displayQueue(); // Refresh the queue
+    });
+  });
+}
+
+// Initial display
+document.addEventListener("DOMContentLoaded", () => {
+  showSection("queue"); // Show queue by default
+  displayQueue();
+});
