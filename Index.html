@@ -107,16 +107,14 @@
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
       import { getFirestore } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
       const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
+        apiKey: "AIzaSyCG3zwrtxM3v-IWvayzWEFja7v0--8tNxI",
         authDomain: "pickleball-line-que.firebaseapp.com",
         projectId: "pickleball-line-que",
-        storageBucket: "pickleball-line-que.appspot.com",
+        storageBucket: "pickleball-line-que.firebasestorage.app",
         messagingSenderId: "728271931366",
         appId: "1:728271931366:web:b5a7081ec287a901387827",
       };
-
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
       window.db = db;
