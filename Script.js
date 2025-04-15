@@ -1,6 +1,5 @@
-// Import Firebase modules
+// Firebase Firestore integration
 import {
-  getFirestore,
   collection,
   addDoc,
   getDocs,
@@ -8,10 +7,8 @@ import {
   doc,
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-// Access the Firestore database from the global window object
 const db = window.db;
 
-// Function to display the specified section and hide others
 function showSection(sectionId) {
   const sections = document.querySelectorAll(".page-section");
   sections.forEach((section) => {
@@ -19,125 +16,96 @@ function showSection(sectionId) {
   });
 }
 
-// Function to display the modal
 function showModal() {
-  document.getElementById("queue-modal").style.display = "block";
+  document.getElementById("queue-modal").style.display = "flex";
 }
 
-// Function to hide the modal
 function hideModal() {
   document.getElementById("queue-modal").style.display = "none";
   document.getElementById("checkin-form").reset();
   document.getElementById("confirmation").innerText = "";
 }
 
-// Function to fetch and display the queue
-async function displayQueue() {
-  const queueList = document.getElementById("queue-list");
-  queueList.innerHTML = ""; // Clear existing content
+// Show modal on button click
+document.getElementById("open-modal-btn").addEventListener("click", showModal);
 
-  const querySnapshot = await getDocs(collection(db, "queue"));
-  querySnapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    const card = document.createElement("div");
-    card.className = "queue-card";
-    card.innerHTML = `
-      <span class="remove-button" data-id="${docSnap.id}">X</span>
-      <p><strong>Name:</strong> ${data.name}</p>
-      <p><strong>Skill Level:</strong> ${data.skill}</p>
-    `;
-    queueList.appendChild(card);
-  });
+// Submit form handler
+const form = document.getElementById("checkin-form");
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  // Add event listeners to remove buttons
-  document.querySelectorAll(".remove-button").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const docId = button.getAttribute("data-id");
-      await deleteDoc(doc(db, "queue", docId));
-      displayQueue(); // Refresh the queue
-    });
-  });
-}
+  const name = document.getElementById("name").value.trim();
+  const partySize = parseInt(document.getElementById("partySize").value);
+  const skill = parseFloat(document.getElementById("skill").value);
+  const matchPref = document.querySelector(
+    "input[name='matchPref']:checked"
+  )?.value;
 
-// Event listener for DOM content loaded
-document.addEventListener("DOMContentLoaded", () => {
-  showSection("queue"); // Show queue by default
-  displayQueue();
+  if (!name || isNaN(partySize) || isNaN(skill)) {
+    document.getElementById("confirmation").innerText =
+      "Please fill out all fields correctly.";
+    return;
+  }
 
-  // Event listener for opening the modal
-  document
-    .getElementById("open-modal-btn")
-    .addEventListener("click", showModal);
+  const player = { name, partySize, skill, matchPref };
 
-  // Event listener for closing the modal
-  document
-    .getElementById("close-modal-btn")
-    .addEventListener("click", hideModal);
-
-  // Event listener for form submission
-  document
-    .getElementById("checkin-form")
-    .addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const name = document.getElementById("name").value.trim();
-      const partySize = parseInt(document.getElementById("partySize").value);
-      const skill = parseFloat(document.getElementById("skill").value);
-      const matchPref = document.querySelector(
-        'input[name="matchPref"]:checked'
-      ).value;
-
-      if (!name || isNaN(partySize) || isNaN(skill)) {
-        document.getElementById("confirmation").innerText =
-          "Please fill out all fields correctly.";
-        return;
-      }
-
-      const data = { name, partySize, skill, matchPref };
-
-      try {
-        await addDoc(collection(db, "queue"), data);
-        hideModal();
-        displayQueue();
-      } catch (err) {
-        console.error("Error joining queue:", err);
-        document.getElementById("confirmation").innerText =
-          "Something went wrong. Please try again.";
-      }
-    });
+  try {
+    await addDoc(collection(db, "queue"), player);
+    hideModal();
+    showQueue();
+  } catch (error) {
+    console.error("Error adding player to queue:", error);
+    document.getElementById("confirmation").innerText =
+      "There was an error. Please try again.";
+  }
 });
-document
-  .getElementById("checkin-form")
-  .addEventListener("submit", async (e) => {
-    e.preventDefault();
 
-    const name = document.getElementById("name").value.trim();
-    const partySize = parseInt(document.getElementById("partySize").value);
-    const skill = parseFloat(document.getElementById("skill").value);
-    const matchPref = document.querySelector(
-      'input[name="matchPref"]:checked'
-    ).value;
+// Display queue
+async function showQueue() {
+  const queueList = document.getElementById("queue-list");
+  const snapshot = await getDocs(collection(db, "queue"));
 
-    if (!name || isNaN(partySize) || isNaN(skill)) {
-      document.getElementById("confirmation").innerText =
-        "Please fill out all fields correctly.";
-      return;
-    }
-
-    const data = { name, partySize, skill, matchPref };
-
-    try {
-      await addDoc(collection(db, "queue"), data);
-      hideModal(); // Hide the modal after successful submission
-      displayQueue(); // Refresh the queue display
-    } catch (err) {
-      console.error("Error joining queue:", err);
-      document.getElementById("confirmation").innerText =
-        "Something went wrong. Please try again.";
-    }
+  let html = "";
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    html += `<div class='queue-card'>
+      <strong>${data.name}</strong> (Skill: ${data.skill})<br />
+      Party Size: ${data.partySize}<br />
+      Match Preference: ${data.matchPref}
+      <button class='remove-button' onclick="deletePlayer('${docSnap.id}')">X</button>
+    </div>`;
   });
-function hideModal() {
-  document.getElementById("queue-modal").style.display = "none";
-  document.getElementById("checkin-form").reset();
-  document.getElementById("confirmation").innerText = "";
+
+  queueList.innerHTML = html;
 }
+
+// Delete player
+window.deletePlayer = async function (id) {
+  try {
+    await deleteDoc(doc(db, "queue", id));
+    showQueue();
+  } catch (err) {
+    console.error("Error deleting player:", err);
+  }
+};
+
+// Initial load
+document.addEventListener("DOMContentLoaded", () => {
+  showSection("queue");
+  showQueue();
+});
+document.addEventListener("DOMContentLoaded", () => {
+  showSection("queue");
+  showQueue();
+
+  // Home button
+  document.getElementById("home-nav").addEventListener("click", () => {
+    showSection("home");
+  });
+
+  // Queue button
+  document.getElementById("queue-nav").addEventListener("click", () => {
+    showSection("queue");
+    showQueue(); // Refresh queue when returning
+  });
+});
