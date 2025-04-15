@@ -117,3 +117,99 @@ main {
   font-weight: 600;
   color: #4f7942;
 }
+/* stuff for que card */
+/* Style for queue cards */
+.queue-card {
+  background-color: white;
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.queue-card:hover {
+  transform: scale(1.02);
+}
+
+.queue-card strong {
+  color: #4caf50;
+  font-size: 1.2rem;
+}
+
+.queue-card p {
+  margin: 0.25rem 0;
+}
+
+.remove-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.remove-button:hover {
+  background-color: #e60000;
+}
+/* style points!!! */
+.queue-current {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4caf50;
+  text-align: center;
+  position: relative;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Ball container to constrain animation */
+.bounce-container {
+  width: 100px;
+  height: 20px;
+  overflow: visible;
+  position: relative;
+}
+
+/* The actual ball */
+.ball {
+  width: 20px;
+  height: 20px;
+  background-color: #ffdd57;
+  border-radius: 50%;
+  display: inline-block;
+  position: absolute;
+  animation: bounce 2s ease-in-out;
+}
+
+/* Bouncing animation */
+@keyframes bounce {
+  0% {
+    transform: translateX(-20px) translateY(0);
+  }
+  25% {
+    transform: translateX(25px) translateY(-20px);
+  }
+  50% {
+    transform: translateX(50px) translateY(0);
+  }
+  75% {
+    transform: translateX(75px) translateY(-20px);
+  }
+  100% {
+    transform: translateX(100px) translateY(0);
+  }
+}
