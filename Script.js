@@ -1,71 +1,34 @@
-document
-  .getElementById("checkin-form")
-  .addEventListener("submit", async (e) => {
-    e.preventDefault();
+// Import Firebase modules
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-    const name = document.getElementById("name").value;
-    const partySize = parseInt(document.getElementById("partySize").value);
-    const skill = parseFloat(document.getElementById("skill").value);
-    const matchPref = document.querySelector(
-      'input[name="matchPref"]:checked'
-    ).value;
+// Access the Firestore database from the global window object
+const db = window.db;
 
-    const data = { name, partySize, skill, matchPref };
-
-    try {
-      const res = await fetch("http://localhost:3000/api/join", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await res.json();
-
-      // Hide modal, show main page, show queue position
-      document.getElementById("queue-modal").style.display = "none";
-      document.getElementById("main-content").style.display = "block";
-      document.getElementById(
-        "line-status"
-      ).innerText = `You are #${result.position} in line.`;
-    } catch (err) {
-      console.error("Error joining queue:", err);
-      document.getElementById("confirmation").innerText =
-        "Something went wrong. Please try again.";
-    }
-  });
-
-// Game Done button functionality
-document.getElementById("game-done-btn").addEventListener("click", async () => {
-  try {
-    const res = await fetch("http://localhost:3000/api/game-done", {
-      method: "POST",
-    });
-
-    const result = await res.json();
-
-    const names = result.nowPlaying.map((p) => p.name).join(", ");
-    document.getElementById("now-playing").style.display = "block";
-    document.getElementById(
-      "now-playing"
-    ).innerText = `You're up! You are playing with: ${names}`;
-
-    // Show the form again so user can rejoin
-    document.getElementById("queue-modal").style.display = "flex";
-    document.getElementById("main-content").style.display = "none";
-    document.getElementById("checkin-form").reset();
-    document.getElementById("confirmation").innerText = "";
-  } catch (err) {
-    alert("Error marking game as done or getting next players.");
-    console.error(err);
-  }
-});
+// Function to display the specified section and hide others
 function showSection(sectionId) {
   const sections = document.querySelectorAll(".page-section");
   sections.forEach((section) => {
     section.style.display = section.id === sectionId ? "block" : "none";
   });
+}
+
+// Function to display the modal
+function showModal() {
+  document.getElementById("queue-modal").style.display = "block";
+}
+
+// Function to hide the modal
+function hideModal() {
+  document.getElementById("queue-modal").style.display = "none";
+  document.getElementById("checkin-form").reset();
+  document.getElementById("confirmation").innerText = "";
 }
 
 // Function to fetch and display the queue
@@ -96,8 +59,50 @@ async function displayQueue() {
   });
 }
 
-// Initial display
+// Event listener for DOM content loaded
 document.addEventListener("DOMContentLoaded", () => {
   showSection("queue"); // Show queue by default
   displayQueue();
+
+  // Event listener for opening the modal
+  document
+    .getElementById("open-modal-btn")
+    .addEventListener("click", showModal);
+
+  // Event listener for closing the modal
+  document
+    .getElementById("close-modal-btn")
+    .addEventListener("click", hideModal);
+
+  // Event listener for form submission
+  document
+    .getElementById("checkin-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const partySize = parseInt(document.getElementById("partySize").value);
+      const skill = parseFloat(document.getElementById("skill").value);
+      const matchPref = document.querySelector(
+        'input[name="matchPref"]:checked'
+      ).value;
+
+      if (!name || isNaN(partySize) || isNaN(skill)) {
+        document.getElementById("confirmation").innerText =
+          "Please fill out all fields correctly.";
+        return;
+      }
+
+      const data = { name, partySize, skill, matchPref };
+
+      try {
+        await addDoc(collection(db, "queue"), data);
+        hideModal();
+        displayQueue();
+      } catch (err) {
+        console.error("Error joining queue:", err);
+        document.getElementById("confirmation").innerText =
+          "Something went wrong. Please try again.";
+      }
+    });
 });
