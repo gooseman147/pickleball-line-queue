@@ -70,11 +70,55 @@ main {
   background-color: rgba(0, 0, 0, 0.4);
 }
 
+/* Modal Card */
 .modal-card {
   background-color: #fff;
   margin: 5% auto;
   padding: 20px;
   border-radius: 10px;
   width: 90%;
-  max-width: 500;
+  max-width: 500px;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Close Button */
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #4caf50;
+  cursor: pointer;
+}
+
+/* Form Inputs */
+.modal-card input,
+.modal-card select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Radio Group */
+.radio-group {
+  margin: 10px 0;
+}
+
+/* Submit Button */
+.modal-card button[type="submit"] {
+  background-color: #4caf50;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.modal-card button[type="submit"]:hover {
+  background-color: #45a049;
 }
